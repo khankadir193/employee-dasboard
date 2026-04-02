@@ -1,0 +1,21 @@
+/* Theme tokens: default is dark. You can add a UI toggle later. */
+:root {
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f6f7fb;
+  --bg-elev-1: rgba(255, 255, 255, 0.88);
+  --bg-elev-2: rgba(255, 255, 255, 0.98);
+  --border: rgba(17, 24, 39, 0.12);
+
+  --text: rgba(17, 24, 39, 0.92);
+  --text-2: rgba(17, 24, 39, 0.72);
+  --text-3: rgba(17, 24, 39, 0.55);
+
+  --shadow-sm: 0 10px 24px rgba(17, 24, 39, 0.08);
+  --shadow-md: 0 30px 80px rgba(17, 24, 39, 0.14);
+}
+
