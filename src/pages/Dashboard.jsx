@@ -8,7 +8,7 @@ import useEmployeeAnalytics from '../hooks/useEmployeeAnalytics.js'
 
 export default function Dashboard() {
   const { employees } = useEmployees()
-  const { metrics } = useEmployeeAnalytics()
+  const { metrics } = useEmployeeAnalytics(employees)
 
   const [filters, setFilters] = useState({ department: '', minPerformance: '' })
 
@@ -53,6 +53,7 @@ export default function Dashboard() {
       <EmployeeFilters filters={filters} onChange={setFilters} />
 
       <div style={{ marginTop: 16 }}>
+        {/* Render full large dataset directly (requested). */}
         <EmployeeList employees={filteredEmployees} />
       </div>
     </div>

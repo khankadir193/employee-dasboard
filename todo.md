@@ -28,4 +28,5 @@
 - Updated Dashboard UI to show KPI cards and an employee grid.
 - Implemented basic filter UI (department + min performance score) and apply to the rendered list.
 - Added `role` back to each employee record and display it on employee cards.
+- Optimized large dataset rendering by loading analytics from existing employee state (no duplicate fetch) and progressively rendering records with a "Load more" button.
 

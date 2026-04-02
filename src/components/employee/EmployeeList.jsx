@@ -12,8 +12,8 @@ export default function EmployeeList({ employees = [] }) {
 
   return (
     <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-      {employees.map((e) => (
-        <EmployeeCard key={e.id ?? e.email ?? e.name} employee={e} />
+      {employees.map((e, idx) => (
+        <EmployeeCard key={`${e.name}-${e.joinDate}-${idx}`} employee={e} />
       ))}
     </div>
   )
