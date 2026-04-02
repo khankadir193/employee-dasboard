@@ -1,11 +1,30 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import useEmployees from '../hooks/useEmployees.js'
 import useEmployeeAnalytics from '../hooks/useEmployeeAnalytics.js'
+import { clearPerformanceRecords, getPerformanceRecords } from '../utils/appPerformanceAudit.js'
+
+function statusColor(status) {
+  if (status === 'pass') return 'rgba(34, 197, 94, 0.35)'
+  if (status === 'warn') return 'rgba(234, 179, 8, 0.35)'
+  if (status === 'fail') return 'rgba(239, 68, 68, 0.35)'
+  return 'rgba(255,255,255,0.12)'
+}
 
 export default function PerformanceReport() {
   const { employees } = useEmployees()
   const { metrics } = useEmployeeAnalytics(employees)
+  const [auditRecords, setAuditRecords] = useState(() => getPerformanceRecords())
+
+  useEffect(() => {
+    const refresh = () => setAuditRecords(getPerformanceRecords())
+    window.addEventListener('performance-audit-saved', refresh)
+    window.addEventListener('storage', refresh)
+    return () => {
+      window.removeEventListener('performance-audit-saved', refresh)
+      window.removeEventListener('storage', refresh)
+    }
+  }, [])
 
   const report = useMemo(() => {
     if (!employees.length) {
@@ -138,6 +157,148 @@ export default function PerformanceReport() {
           </div>
         </section>
       </div>
+
+      <section className="card" style={{ padding: 16, marginTop: 12 }}>
+        <div className="cardHeader" style={{ marginBottom: 10 }}>
+          <div>
+            <h3 style={{ fontSize: 18, marginBottom: 4 }}>App Performance Audit Records</h3>
+            <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
+              Reports are saved in this browser (localStorage) until you clear them or clear site data. Each Run Audit
+              recalculates metrics and appends a new report.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              clearPerformanceRecords()
+              setAuditRecords([])
+            }}
+          >
+            Clear Records
+          </button>
+        </div>
+
+        {auditRecords.length ? (
+          <div style={{ display: 'grid', gap: 8 }}>
+            {auditRecords.map((r) => (
+              <div
+                key={r.id}
+                style={{
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 10,
+                  padding: 12,
+                  display: 'grid',
+                  gap: 10,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <strong>Score: {r.overallScore}/100</strong>
+                    {r.evaluation?.summaryStatus ? (
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 800,
+                          padding: '4px 8px',
+                          borderRadius: 999,
+                          background: statusColor(
+                            r.evaluation.summaryStatus === 'pass'
+                              ? 'pass'
+                              : r.evaluation.summaryStatus === 'needs_improvement'
+                                ? 'warn'
+                                : 'fail'
+                          ),
+                        }}
+                      >
+                        {r.evaluation.summaryStatus === 'pass'
+                          ? 'CHECK: OK'
+                          : r.evaluation.summaryStatus === 'needs_improvement'
+                            ? 'NEEDS IMPROVEMENT'
+                            : 'ACTION REQUIRED'}
+                      </span>
+                    ) : null}
+                  </div>
+                  <span style={{ opacity: 0.8 }}>{new Date(r.createdAt).toLocaleString()}</span>
+                </div>
+
+                {r.evaluation?.summaryLabel ? (
+                  <p style={{ margin: 0, fontSize: 14, opacity: 0.9 }}>{r.evaluation.summaryLabel}</p>
+                ) : null}
+
+                {r.evaluation?.checks?.length ? (
+                  <div style={{ display: 'grid', gap: 6, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                    {r.evaluation.checks.map((c) => (
+                      <div
+                        key={c.key}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          gap: 8,
+                          padding: '8px 10px',
+                          borderRadius: 8,
+                          background: statusColor(c.status),
+                          fontSize: 13,
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        <span style={{ fontWeight: 700 }}>{c.label}</span>
+                        <span>
+                          {c.display}{' '}
+                          <span style={{ opacity: 0.85 }}>
+                            (
+                            {c.status === 'pass'
+                              ? 'good'
+                              : c.status === 'warn'
+                                ? 'needs improvement'
+                                : c.status === 'fail'
+                                  ? 'poor'
+                                  : 'n/a'}
+                            )
+                          </span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: 13, opacity: 0.85 }}>
+                    Run <strong>Run Audit</strong> again to generate full pass/warn checks and improvement hints for this
+                    history entry.
+                  </p>
+                )}
+
+                {r.evaluation?.improvements?.length ? (
+                  <div>
+                    <div style={{ fontWeight: 800, marginBottom: 6 }}>Suggested improvements</div>
+                    <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.95 }}>
+                      {r.evaluation.improvements.map((line, i) => (
+                        <li key={i} style={{ marginBottom: 4 }}>
+                          {line}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                <details style={{ fontSize: 13, opacity: 0.9 }}>
+                  <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Raw metrics</summary>
+                  <div style={{ marginTop: 8, display: 'grid', gap: 4, gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+                    <span>FCP: {r.webVitals?.fcpMs ?? '—'} ms</span>
+                    <span>LCP: {r.webVitals?.lcpMs ?? '—'} ms</span>
+                    <span>FID: {r.webVitals?.fidMs ?? '—'} ms</span>
+                    <span>TTI: {r.webVitals?.ttiMs ?? '—'} ms</span>
+                    <span>TBT: {r.webVitals?.tbtMs ?? '—'} ms</span>
+                    <span>CLS: {r.webVitals?.cls ?? '—'}</span>
+                    <span>DCL: {r.diagnostics?.domContentLoadedMs ?? '—'} ms</span>
+                    <span>Load: {r.diagnostics?.loadEventMs ?? '—'} ms</span>
+                  </div>
+                </details>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No saved audit records yet. Click "Run Audit" in the header.</p>
+        )}
+      </section>
     </div>
   )
 }

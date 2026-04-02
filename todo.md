@@ -30,3 +30,9 @@
 - Added `role` back to each employee record and display it on employee cards.
 - Optimized large dataset rendering by loading analytics from existing employee state (no duplicate fetch) and progressively rendering records with a "Load more" button.
 
+## App performance audit records
+- Added `Run Audit` button in header to calculate Lighthouse-like app metrics.
+- Added persistent audit storage in `localStorage` via `src/utils/appPerformanceAudit.js`.
+- Extended `PerformanceReport` to render full audit history with responsive cards and clear-record action.
+- Audit records now include pass/warn/fail checks vs Web Vitals thresholds, improvement hints, and survive until cleared (browser storage; not cleared on OS shutdown).
+
