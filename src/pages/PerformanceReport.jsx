@@ -15,6 +15,13 @@ export default function PerformanceReport() {
   const { employees } = useEmployees()
   const { metrics } = useEmployeeAnalytics(employees)
   const [auditRecords, setAuditRecords] = useState(() => getPerformanceRecords())
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      return localStorage.getItem('employee-dashboard-next-performance-tab') === 'runaudit' ? 'runaudit' : 'performance'
+    } catch {
+      return 'performance'
+    }
+  })
 
   useEffect(() => {
     const refresh = () => setAuditRecords(getPerformanceRecords())
@@ -25,6 +32,15 @@ export default function PerformanceReport() {
       window.removeEventListener('storage', refresh)
     }
   }, [])
+
+  useEffect(() => {
+    if (activeTab !== 'runaudit') return
+    try {
+      localStorage.removeItem('employee-dashboard-next-performance-tab')
+    } catch {
+      // ignore
+    }
+  }, [activeTab])
 
   const report = useMemo(() => {
     if (!employees.length) {
@@ -75,90 +91,141 @@ export default function PerformanceReport() {
 
   return (
     <div>
-      <h2 style={{ margin: '0 0 12px' }}>Performance Report</h2>
+      <h2 style={{ margin: '0 0 12px' }}>
+        {activeTab === 'runaudit' ? 'Audit Report' : 'Performance Report'}
+      </h2>
 
-      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ opacity: 0.85, fontWeight: 700 }}>Total Employees</div>
-          <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
-            {(metrics?.employeesCount ?? 0).toLocaleString()}
-          </div>
-        </div>
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ opacity: 0.85, fontWeight: 700 }}>Average Salary</div>
-          <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
-            ${Math.round(metrics?.avgSalary ?? 0).toLocaleString()}
-          </div>
-        </div>
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ opacity: 0.85, fontWeight: 700 }}>Top Department</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginTop: 8 }}>{metrics?.topDepartment ?? '-'}</div>
-        </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
+        <button
+          type="button"
+          onClick={() => setActiveTab('performance')}
+          aria-pressed={activeTab === 'performance'}
+          style={{
+            fontWeight: 800,
+            background: activeTab === 'performance' ? 'rgba(124, 58, 237, 0.25)' : undefined,
+          }}
+        >
+          Performance
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('runaudit')}
+          aria-pressed={activeTab === 'runaudit'}
+          style={{
+            fontWeight: 800,
+            background: activeTab === 'runaudit' ? 'rgba(124, 58, 237, 0.25)' : undefined,
+          }}
+        >
+          RunAudit
+        </button>
       </div>
 
-      <section className="card" style={{ padding: 16, marginTop: 12 }}>
-        <h3 style={{ fontSize: 18, marginBottom: 10 }}>Department Performance</h3>
-        {report.deptRows.length ? (
-          <div style={{ display: 'grid', gap: 8 }}>
-            {report.deptRows.map((row) => (
-              <div
-                key={row.department}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr 1fr',
-                  gap: 10,
-                  padding: '10px 12px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: 10,
-                }}
-              >
-                <strong>{row.department}</strong>
-                <span>Count: {row.count}</span>
-                <span>Avg Perf: {row.avgPerformance.toFixed(2)}</span>
-                <span>Avg Salary: ${Math.round(row.avgSalary).toLocaleString()}</span>
+      {activeTab === 'performance' ? (
+        <>
+          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+            <div className="card" style={{ padding: 16 }}>
+              <div style={{ opacity: 0.85, fontWeight: 700 }}>Total Employees</div>
+              <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
+                {(metrics?.employeesCount ?? 0).toLocaleString()}
               </div>
-            ))}
-          </div>
-        ) : (
-          <p>No department data available.</p>
-        )}
-      </section>
-
-      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginTop: 12 }}>
-        <section className="card" style={{ padding: 16 }}>
-          <h3 style={{ fontSize: 18, marginBottom: 10 }}>Top 5 Performers</h3>
-          <div style={{ display: 'grid', gap: 8 }}>
-            {report.topPerformers.map((e, idx) => (
-              <div
-                key={`${e.name}-${e.joinDate}-${idx}`}
-                style={{ display: 'flex', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 6 }}
-              >
-                <span>
-                  {e.name} - {e.department}
-                </span>
-                <strong>{Number(e.performanceScore ?? 0).toFixed(1)}</strong>
+            </div>
+            <div className="card" style={{ padding: 16 }}>
+              <div style={{ opacity: 0.85, fontWeight: 700 }}>Average Salary</div>
+              <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
+                ${Math.round(metrics?.avgSalary ?? 0).toLocaleString()}
               </div>
-            ))}
+            </div>
+            <div className="card" style={{ padding: 16 }}>
+              <div style={{ opacity: 0.85, fontWeight: 700 }}>Top Department</div>
+              <div style={{ fontSize: 18, fontWeight: 800, marginTop: 8 }}>{metrics?.topDepartment ?? '-'}</div>
+            </div>
           </div>
-        </section>
 
-        <section className="card" style={{ padding: 16 }}>
-          <h3 style={{ fontSize: 18, marginBottom: 10 }}>Recent Joiners</h3>
-          <div style={{ display: 'grid', gap: 8 }}>
-            {report.recentJoiners.map((e, idx) => (
-              <div
-                key={`${e.name}-${e.joinDate}-recent-${idx}`}
-                style={{ display: 'flex', justifyContent: 'space-between', gap: 12, borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: 6 }}
-              >
-                <span>{e.name}</span>
-                <span style={{ opacity: 0.85 }}>{e.joinDate}</span>
+          <section className="card" style={{ padding: 16, marginTop: 12 }}>
+            <h3 style={{ fontSize: 18, marginBottom: 10 }}>Department Performance</h3>
+            {report.deptRows.length ? (
+              <div style={{ display: 'grid', gap: 8 }}>
+                {report.deptRows.map((row) => (
+                  <div
+                    key={row.department}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '2fr 1fr 1fr 1fr',
+                      gap: 10,
+                      padding: '10px 12px',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: 10,
+                    }}
+                  >
+                    <strong>{row.department}</strong>
+                    <span>Count: {row.count}</span>
+                    <span>Avg Perf: {row.avgPerformance.toFixed(2)}</span>
+                    <span>Avg Salary: ${Math.round(row.avgSalary).toLocaleString()}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
-      </div>
+            ) : (
+              <p>No department data available.</p>
+            )}
+          </section>
 
-      <section className="card" style={{ padding: 16, marginTop: 12 }}>
+          <div
+            style={{
+              display: 'grid',
+              gap: 12,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              marginTop: 12,
+            }}
+          >
+            <section className="card" style={{ padding: 16 }}>
+              <h3 style={{ fontSize: 18, marginBottom: 10 }}>Top 5 Performers</h3>
+              <div style={{ display: 'grid', gap: 8 }}>
+                {report.topPerformers.map((e, idx) => (
+                  <div
+                    key={`${e.name}-${e.joinDate}-${idx}`}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      borderBottom: '1px solid rgba(255,255,255,0.1)',
+                      paddingBottom: 6,
+                    }}
+                  >
+                    <span>
+                      {e.name} - {e.department}
+                    </span>
+                    <strong>{Number(e.performanceScore ?? 0).toFixed(1)}</strong>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="card" style={{ padding: 16 }}>
+              <h3 style={{ fontSize: 18, marginBottom: 10 }}>Recent Joiners</h3>
+              <div style={{ display: 'grid', gap: 8 }}>
+                {report.recentJoiners.map((e, idx) => (
+                  <div
+                    key={`${e.name}-${e.joinDate}-recent-${idx}`}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      borderBottom: '1px solid rgba(255,255,255,0.1)',
+                      paddingBottom: 6,
+                    }}
+                  >
+                    <span>{e.name}</span>
+                    <span style={{ opacity: 0.85 }}>{e.joinDate}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </>
+      ) : null}
+
+      {activeTab === 'runaudit' ? (
+        <section className="card" style={{ padding: 16, marginTop: 12 }}>
         <div className="cardHeader" style={{ marginBottom: 10 }}>
           <div>
             <h3 style={{ fontSize: 18, marginBottom: 4 }}>App Performance Audit Records</h3>
@@ -299,6 +366,7 @@ export default function PerformanceReport() {
           <p>No saved audit records yet. Click "Run Audit" in the header.</p>
         )}
       </section>
+      ) : null}
     </div>
   )
 }

@@ -18,6 +18,11 @@ export default function App() {
       const record = await runPerformanceAudit()
       setLastAuditScore(record.overallScore)
       window.dispatchEvent(new CustomEvent('performance-audit-saved', { detail: record }))
+      try {
+        localStorage.setItem('employee-dashboard-next-performance-tab', 'runaudit')
+      } catch {
+        // ignore
+      }
       setView('report')
     } finally {
       setIsAuditing(false)
