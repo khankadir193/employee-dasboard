@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import useEmployees from '../hooks/useEmployees.js'
 import useEmployeeAnalytics from '../hooks/useEmployeeAnalytics.js'
@@ -23,13 +23,16 @@ export default function PerformanceReport() {
     }
   })
 
+  const refreshAuditRecords = useCallback(() => {
+    setAuditRecords(getPerformanceRecords())
+  }, [])
+
   useEffect(() => {
-    const refresh = () => setAuditRecords(getPerformanceRecords())
-    window.addEventListener('performance-audit-saved', refresh)
-    window.addEventListener('storage', refresh)
+    window.addEventListener('performance-audit-saved', refreshAuditRecords)
+    window.addEventListener('storage', refreshAuditRecords)
     return () => {
-      window.removeEventListener('performance-audit-saved', refresh)
-      window.removeEventListener('storage', refresh)
+      window.removeEventListener('performance-audit-saved', refreshAuditRecords)
+      window.removeEventListener('storage', refreshAuditRecords)
     }
   }, [])
 
@@ -41,6 +44,13 @@ export default function PerformanceReport() {
       // ignore
     }
   }, [activeTab])
+
+  const showPerformanceTab = useCallback(() => setActiveTab('performance'), [])
+  const showRunAuditTab = useCallback(() => setActiveTab('runaudit'), [])
+  const handleClearRecords = useCallback(() => {
+    clearPerformanceRecords()
+    setAuditRecords([])
+  }, [])
 
   const report = useMemo(() => {
     if (!employees.length) {
@@ -98,7 +108,7 @@ export default function PerformanceReport() {
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
         <button
           type="button"
-          onClick={() => setActiveTab('performance')}
+          onClick={showPerformanceTab}
           aria-pressed={activeTab === 'performance'}
           style={{
             fontWeight: 800,
@@ -109,7 +119,7 @@ export default function PerformanceReport() {
         </button>
         <button
           type="button"
-          onClick={() => setActiveTab('runaudit')}
+          onClick={showRunAuditTab}
           aria-pressed={activeTab === 'runaudit'}
           style={{
             fontWeight: 800,
@@ -236,10 +246,7 @@ export default function PerformanceReport() {
           </div>
           <button
             type="button"
-            onClick={() => {
-              clearPerformanceRecords()
-              setAuditRecords([])
-            }}
+            onClick={handleClearRecords}
           >
             Clear Records
           </button>

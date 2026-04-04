@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import EmployeeList from '../components/employee/EmployeeList.jsx'
 import EmployeeFilters from '../components/employee/EmployeeFilters.jsx'
@@ -21,6 +21,10 @@ export default function Dashboard() {
       return true
     })
   }, [employees, filters])
+
+  const handleFiltersChange = useCallback((next) => {
+    setFilters(next)
+  }, [])
 
   return (
     <div>
@@ -50,7 +54,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <EmployeeFilters filters={filters} onChange={setFilters} />
+      <EmployeeFilters filters={filters} onChange={handleFiltersChange} />
 
       <div style={{ marginTop: 16 }}>
         {/* Render full large dataset directly (requested). */}

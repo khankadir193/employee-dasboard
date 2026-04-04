@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import Routes from './routes.jsx'
 import { runPerformanceAudit } from '../utils/appPerformanceAudit.js'
@@ -11,7 +11,7 @@ export default function App() {
 
   const routeProps = useMemo(() => ({ view }), [view])
 
-  async function handleRunAudit() {
+  const handleRunAudit = useCallback(async () => {
     if (isAuditing) return
     setIsAuditing(true)
     try {
@@ -21,13 +21,13 @@ export default function App() {
       try {
         localStorage.setItem('employee-dashboard-next-performance-tab', 'runaudit')
       } catch {
-        // ignore
+        // ignore (quota / blocked storage)
       }
       setView('report')
     } finally {
       setIsAuditing(false)
     }
-  }
+  }, [isAuditing])
 
   return (
     <div style={{ padding: 16, maxWidth: 1100, margin: '0 auto' }}>
