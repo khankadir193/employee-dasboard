@@ -13,12 +13,20 @@ function EmployeeFilters({ filters = {}, onChange }) {
     setDraft(filters)
   }, [filters])
 
-  // Live apply search on debounce change
+// Live apply all debounced values
+  const debouncedDept = useDebounce(draft.department || '', 300)
+  const debouncedMinPerf = useDebounce(draft.minPerformance || '', 300)
+  
   useEffect(() => {
     if (onChange) {
-      onChange({ ...draft, search: debouncedSearch })
+      onChange({ 
+        ...draft, 
+        search: debouncedSearch,
+        department: debouncedDept,
+        minPerformance: debouncedMinPerf
+      })
     }
-  }, [debouncedSearch, draft, onChange])
+  }, [debouncedSearch, debouncedDept, debouncedMinPerf, onChange])
 
   const handleSearchChange = (value) => {
     setDraft((d) => ({ ...d, search: value }))
@@ -44,10 +52,11 @@ function EmployeeFilters({ filters = {}, onChange }) {
         <button
           type="button"
           onClick={handleApplyFilters}
-          style={{ whiteSpace: 'nowrap', fontWeight: 700 }}
+          style={{ whiteSpace: 'nowrap', fontWeight: 500, opacity: 0.7 }}
           className="apply-btn"
+          title="Force immediate apply (debounce override)"
         >
-          Apply
+          Apply Now
         </button>
       </div>
 

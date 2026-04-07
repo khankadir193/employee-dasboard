@@ -1,3 +1,4 @@
+import './EmployeeList.css'
 import EmployeeCard from './EmployeeCard.jsx'
 import Pagination from '../common/Pagination.jsx'
 import { memo } from 'react'
@@ -22,12 +23,7 @@ function EmployeeList({
 
   return (
     <>
-      <div style={{ 
-        display: 'grid', 
-        gap: 12, 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        '@media (max-width: 640px)': { gridTemplateColumns: '1fr' }
-      }}>
+      <div className="employee-grid">
         {employees.map((e, idx) => (
           <EmployeeCard key={`${e.id}-${currentPage}-${idx}`} employee={e} />
         ))}

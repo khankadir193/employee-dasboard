@@ -1,0 +1,11 @@
+.employee-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+@media (max-width: 640px) {
+  .employee-grid {
+    grid-template-columns: 1fr;
+  }
+}
