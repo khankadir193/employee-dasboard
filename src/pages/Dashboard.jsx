@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 
 import EmployeeList from '../components/employee/EmployeeList.jsx'
 import EmployeeFilters from '../components/employee/EmployeeFilters.jsx'
+import Pagination from '../components/common/Pagination.jsx'
 
 import useEmployees from '../hooks/useEmployees.js'
 import useEmployeeAnalytics from '../hooks/useEmployeeAnalytics.js'
@@ -11,6 +12,8 @@ export default function Dashboard() {
   const { metrics } = useEmployeeAnalytics(employees)
 
   const [filters, setFilters] = useState({ department: '', minPerformance: '', search: '' })
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 12
 
   const filteredEmployees = useMemo(() => {
     const minPerfNum = filters.minPerformance === '' ? null : Number(filters.minPerformance)
@@ -18,16 +21,31 @@ export default function Dashboard() {
 
     return employees.filter((e) => {
       if (filters.department && e.department !== filters.department) return false
-      if (minPerfNum !== null && !Number.isNaN(minPerfNum) && e.performanceScore < minPerfNum) return false
-      if (searchLower && !e.name.toLowerCase().includes(searchLower) && 
+      if (minPerfNum !== null && !Number.isNaN(minPerfNum) && (e.performanceScore ?? 0) < minPerfNum) return false
+      if (searchLower && 
+          !e.name.toLowerCase().includes(searchLower) && 
           !e.role.toLowerCase().includes(searchLower) && 
           !e.department.toLowerCase().includes(searchLower)) return false
       return true
     })
   }, [employees, filters])
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filteredEmployees.length])
+
+  const paginatedEmployees = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredEmployees.slice(start, start + pageSize)
+  }, [filteredEmployees, currentPage, pageSize])
+
   const handleFiltersChange = useCallback((next) => {
     setFilters(next)
+  }, [])
+
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page)
   }, [])
 
   return (
@@ -43,7 +61,7 @@ export default function Dashboard() {
         }}
       >
         <div className="card" style={{ padding: 16 }}>
-          <div style={{ fontWeight: 700, opacity: 0.9 }}>Employees</div>
+          <div style={{ fontWeight: 700, opacity: 0.9 }}>Total Employees</div>
           <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>{metrics?.employeesCount ?? 0}</div>
         </div>
         <div className="card" style={{ padding: 16 }}>
@@ -53,16 +71,21 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="card" style={{ padding: 16 }}>
-          <div style={{ fontWeight: 700, opacity: 0.9 }}>Top Department</div>
-          <div style={{ fontSize: 18, fontWeight: 800, marginTop: 6 }}>{metrics?.topDepartment ?? '-'}</div>
+          <div style={{ fontWeight: 700, opacity: 0.9 }}>Filtered</div>
+          <div style={{ fontSize: 18, fontWeight: 800, marginTop: 6 }}>{filteredEmployees.length}</div>
         </div>
       </div>
 
       <EmployeeFilters filters={filters} onChange={handleFiltersChange} />
 
       <div style={{ marginTop: 16 }}>
-        {/* Render full large dataset directly (requested). */}
-        <EmployeeList employees={filteredEmployees} />
+        <EmployeeList 
+          employees={paginatedEmployees} 
+          totalCount={filteredEmployees.length}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   )
