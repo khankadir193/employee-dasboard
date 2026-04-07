@@ -1,6 +1,10 @@
 import EmployeeCard from './EmployeeCard.jsx'
 
-export default function EmployeeList({ employees = [] }) {
+import { memo } from 'react'
+
+export default memo(EmployeeList)
+
+function EmployeeList({ employees = [] }) {
   if (!employees.length) {
     return (
       <div className="card" style={{ padding: 16 }}>

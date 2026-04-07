@@ -1,5 +1,17 @@
 import { defineConfig } from 'vite'
 
-// Keep config minimal; Vite will handle JSX/React via the default pipeline.
-export default defineConfig({})
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-window'],
+          'dashboard': ['src/pages/Dashboard.jsx', 'src/components/employee'],
+          'analytics': ['src/hooks', 'src/services']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  }
+})
 

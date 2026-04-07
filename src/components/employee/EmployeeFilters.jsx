@@ -3,7 +3,11 @@ import useDebounce from '../../hooks/useDebounce.js'
 
 import { departmentFilters } from '../../constants/filters.js'
 
-export default function EmployeeFilters({ filters = {}, onChange }) {
+import { memo } from 'react'
+
+export default memo(EmployeeFilters)
+
+function EmployeeFilters({ filters = {}, onChange }) {
   const [draft, setDraft] = useState(filters)
   const debouncedSearch = useDebounce(draft.search || '', 300)
 
