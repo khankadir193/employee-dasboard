@@ -10,14 +10,18 @@ export default function Dashboard() {
   const { employees } = useEmployees()
   const { metrics } = useEmployeeAnalytics(employees)
 
-  const [filters, setFilters] = useState({ department: '', minPerformance: '' })
+  const [filters, setFilters] = useState({ department: '', minPerformance: '', search: '' })
 
   const filteredEmployees = useMemo(() => {
     const minPerfNum = filters.minPerformance === '' ? null : Number(filters.minPerformance)
+    const searchLower = (filters.search || '').toLowerCase().trim()
 
     return employees.filter((e) => {
       if (filters.department && e.department !== filters.department) return false
       if (minPerfNum !== null && !Number.isNaN(minPerfNum) && e.performanceScore < minPerfNum) return false
+      if (searchLower && !e.name.toLowerCase().includes(searchLower) && 
+          !e.role.toLowerCase().includes(searchLower) && 
+          !e.department.toLowerCase().includes(searchLower)) return false
       return true
     })
   }, [employees, filters])

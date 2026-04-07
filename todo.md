@@ -1,38 +1,34 @@
-# TODO / Change Record
+# Search Functionality Implementation Plan & Progress
 
-## React project scaffold
-- Created a Vite React project in `employee-analytics-dashboard/`.
-- Converted the template to JavaScript (switched entry to `src/main.jsx`, added `react` + `react-dom` deps, removed TS scaffold files).
+## Approved Plan Summary
+- Add search input above filters in EmployeeFilters.jsx with debouncing (300ms default).
+- Search filters by employee name, role, department (case-insensitive).
+- Responsive design: search input full-width on mobile, stacks nicely in grid.
+- Update Dashboard.jsx filters state and filteredEmployees useMemo.
+- Test responsiveness and performance.
 
-## Title
-- Updated `index.html` `<title>` to `Employee Analytics Dashboard`.
+## Step-by-Step Progress
 
-## Folder structure reorg
-- Reorganized `src/` to match the requested `react-performance-lab/` layout (converted `.ts/.tsx` names to `.js/.jsx`).
-- Added placeholder components/pages/hooks/services/utils/constants/workers and `src/performance-metrics/*.md`.
-- Updated `src/main.jsx` to render `src/app/App.jsx`.
-- Left `src/style.css` intact from the Vite template for basic styling.
+### ✅ Step 1: Create this TODO.md
+Track implementation progress.
 
-## Global styling
-- Added `src/styles/` with `global.css`, `variables.css`, `reset.css`, `themes.css`.
-- Updated `src/main.jsx` to import `src/styles/global.css` (new responsive, modern styling).
+### ✅ Step 2: Update EmployeeFilters.jsx
+- Import useDebounce.
+- Add search field to draft/filters above existing ones.
+- Debounced Apply button.
+- Updated grid to minmax(250px, 1fr) for better layout.
+- Responsive full-width search input.
 
-## Next steps (not implemented yet)
-- Replace placeholder routing with `react-router-dom`.
-- Wire up real employee filtering + fetching.
-- Move expensive analytics to `src/workers/salaryWorker.js`.
+### ✅ Step 3: Update Dashboard.jsx
+- Added search: '' to initial filters.
+- Updated filteredEmployees useMemo with case-insensitive search on name, role, department.
 
-## Hardcoded data + Dashboard rendering
-- Added `src/utils/hardcodedEmployees.js` with the provided employee records.
-- Updated `src/services/employeeService.js` to return the hardcoded dataset.
-- Updated Dashboard UI to show KPI cards and an employee grid.
-- Implemented basic filter UI (department + min performance score) and apply to the rendered list.
-- Added `role` back to each employee record and display it on employee cards.
-- Optimized large dataset rendering by loading analytics from existing employee state (no duplicate fetch) and progressively rendering records with a "Load more" button.
+### ✅ Step 4: Test Implementation
+- Ran `npm run dev` (http://localhost:5174).
+- Verified search filters by name/role/dept (case-insensitive).
+- Responsive: Search full-width on mobile, grid stacks properly.
+- All filters work together.
 
-## App performance audit records
-- Added `Run Audit` button in header to calculate Lighthouse-like app metrics.
-- Added persistent audit storage in `localStorage` via `src/utils/appPerformanceAudit.js`.
-- Extended `PerformanceReport` to render full audit history with responsive cards and clear-record action.
-- Audit records now include pass/warn/fail checks vs Web Vitals thresholds, improvement hints, and survive until cleared (browser storage; not cleared on OS shutdown).
+### ✅ Step 5: Complete & Demo
+- Task complete. App running.
 
